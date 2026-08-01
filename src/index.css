@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root { --border: 220 15% 90%; --background: 0 0% 100%; --foreground: 220 40% 10%; }
+  html, body, #root { height: 100%; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: #F3F6F5;
+    -webkit-tap-highlight-color: transparent;
+  }
+  * { -webkit-overflow-scrolling: touch; }
+  ::-webkit-scrollbar { display: none; }
+}
