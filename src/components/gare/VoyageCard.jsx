@@ -1,39 +1,56 @@
 import React from 'react';
-import { Clock, Users, MapPin } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { StatusBadge } from './StatusBadge';
+import { MapPin, User, Clock, Users } from 'lucide-react';
+import StatusBadge from './StatusBadge';
+import { useGare } from '@/lib/GareContext';
 
-export function VoyageCard({ voyage, onClick }) {
-  const tauxRemplissage = voyage.places_total
-    ? Math.round((voyage.places_occupees / voyage.places_total) * 100)
-    : 0;
+export default function VoyageCard({ voyage }) {
+  const { openSheet } = useGare();
+  const placesRestantes = (voyage.places_total || 0) - (voyage.places_occupees || 0);
 
   return (
-    <Card className="cursor-pointer active:scale-[0.98] transition-transform" onClick={() => onClick?.(voyage)}>
-      <CardContent className="py-4">
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex items-center gap-1.5 text-encre">
-            <MapPin className="w-4 h-4 text-ciel" />
-            <span className="font-display font-semibold">{voyage.destination}</span>
+    <div
+      onClick={() => openSheet('detail-voyage', voyage)}
+      className="group rounded-2xl border border-border/50 bg-card/60 backdrop-blur-sm p-4 hover:border-primary/30 transition-all cursor-pointer active:scale-[0.98]"
+    >
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center">
+            <MapPin className="w-4 h-4 text-primary" />
           </div>
-          <StatusBadge status={voyage.statut} />
+          <div>
+            <p className="font-bold text-sm">
+              {voyage.origine || 'Cotonou'} → {voyage.destination}
+            </p>
+            <p className="text-[10px] text-muted-foreground font-mono">
+              {voyage.code_voyage || 'GC-' + (voyage.id?.slice(-4) || '0000')}
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-4 text-xs text-encre/50 mb-3">
-          <span className="flex items-center gap-1"><Clock className="w-3.5 h-3.5" /> {voyage.heure_depart}</span>
-          <span className="flex items-center gap-1"><Users className="w-3.5 h-3.5" /> {voyage.places_occupees}/{voyage.places_total}</span>
-          {voyage.code_voyage && <span className="font-mono">{voyage.code_voyage}</span>}
-        </div>
-        <div className="h-1.5 bg-encre/5 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-ciel rounded-full transition-all"
-            style={{ width: `${voyage.statut === 'arrive' ? 100 : voyage.progression || 0}%` }}
-          />
-        </div>
-        <div className="flex justify-between mt-2 text-[11px] text-encre/40">
-          <span>{voyage.chauffeur}</span>
-          <span>{tauxRemplissage}% rempli</span>
-        </div>
-      </CardContent>
-    </Card>
+        <StatusBadge status={voyage.statut} />
+      </div>
+
+      <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+        <span className="flex items-center gap-1">
+          <User className="w-3 h-3" /> {voyage.chauffeur}
+        </span>
+        <span className="flex items-center gap-1">
+          <Users className="w-3 h-3" /> {voyage.places_occupees || 0}/{voyage.places_total}
+        </span>
+        <span className="flex items-center gap-1 font-mono font-bold text-foreground">
+          <Clock className="w-3 h-3 text-muted-foreground" /> {voyage.heure_depart}
+        </span>
+      </div>
+
+      <div className="relative h-1.5 bg-muted rounded-full overflow-hidden">
+        <div
+          className="absolute left-0 top-0 h-full bg-gradient-to-r from-primary to-accent rounded-full transition-all duration-500"
+          style={{ width: `${voyage.progression || 0}%` }}
+        />
+      </div>
+      <div className="flex justify-between mt-1">
+        <span className="text-[10px] text-muted-foreground">{voyage.progression || 0}% du trajet</span>
+        <span className="text-[10px] font-mono font-bold text-primary">{placesRestantes} places</span>
+      </div>
+    </div>
   );
 }

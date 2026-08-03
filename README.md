@@ -1,6 +1,7 @@
 # GareConnect Bénin
 
-Migration du projet Base44 vers React/Vite + Supabase + Netlify, prête pour une mise en vente/démo.
+Reproduction fidèle du design/code base44 (thème sombre Outfit, glass/glow, teal/orange/sky),
+migré vers React/Vite + Supabase + Netlify.
 
 ## Installation
 
@@ -13,28 +14,43 @@ npm run dev
 ## Base de données
 
 1. Crée un projet Supabase.
-2. Exécute `supabase/schema.sql` dans le SQL editor (tables + RLS + fonction `increment_places`).
-3. (Optionnel, pour plus tard) Déploie la fonction Edge : `supabase functions deploy notifier-incident-resolu`.
-4. Active le provider Google dans Authentication > Providers si tu veux le login Google.
+2. SQL Editor → exécute `supabase/schema.sql` (tables, RLS, trigger profils, fonction `increment_places`).
+3. Authentication → Providers → active Email + Google si besoin.
+4. **Important pour l'inscription par code OTP** (utilisée dans `Register.jsx`) :
+   Authentication → Emails → configure le template de confirmation en mode "Email OTP"
+   (code à 6 chiffres) plutôt que "Magic Link", sinon `verifyOtp` échouera.
+5. Déploie la fonction Edge : `supabase functions deploy notifyIncidentResolved`
+   (nom exact attendu par `base44.functions.invoke('notifyIncidentResolved', ...)`).
 
-## État actuel — prêt pour la vente
+## Architecture — comment le code base44 a été préservé
 
-✅ Branding réel appliqué (logo, favicon, PWA manifest, couleurs)
-✅ QR code réel généré sur chaque ticket (lib `qrcode`)
-✅ Export PDF du ticket fonctionnel (jspdf + html2canvas)
-✅ Incrément des places atomique côté base (plus de perte de place en cas de double vente simultanée)
-✅ RLS ticket : le créateur peut corriger son propre ticket, pas seulement l'admin
-✅ Carte et Stats chargées à la demande (lazy loading) pour un premier chargement plus rapide
-✅ App installable (PWA) — "Ajouter à l'écran d'accueil"
+Le point clé de cette migration : **`src/api/base44Client.js`** reproduit exactement la même
+API que le SDK base44 (`entities.X.list/create/update/delete`, `auth.me/login.../logout`,
+`functions.invoke`) mais tape sur Supabase en dessous. Résultat : toutes les pages et
+composants ci-dessous sont repris **tels quels** de ton code base44 d'origine, sans réécriture :
 
-⏳ Volontairement non branché : envoi SMS réel (Orange/MTN API). Les "Alertes" restent un
-   journal interne fonctionnel (visible dans l'app), mais n'envoient pas encore de vrai SMS.
-   À brancher plus tard sans rien casser — c'est déjà la seule pièce manquante.
+- `src/pages/*.jsx` — Accueil, Alertes, Carte, Departs, GestionVehicules, Incidents,
+  ListePassagers, Login, Profil, Register, ResetPassword, Stats, TicketPage, ForgotPassword
+- `src/components/gare/*.jsx` — Header, BottomNav, BottomSheet, VoyageCard, MetricCard, StatusBadge
+- `src/components/ui/*.jsx` — sheet, drawer, dialog, dropdown-menu, avatar, skeleton, sonner (verbatim)
+- `src/index.css`, `tailwind.config.js`, `components.json` — repris à l'identique
 
-## Ce qui a changé vs Base44
+Seuls quelques composants ont dû être reconstruits car leur code n'était pas fourni
+(mais leur signature d'usage a été respectée à partir de ce qui les appelle) :
+`ContactFamilleList`, `TicketPreview`, `SmsBubble`, `RouteOptimizer`, `ToastContainer`,
+`AppLayout`, `NouveauDepartSheet`, `DetailVoyageSheet`, `IncidentSheet`, `SyncQueueSheet`,
+`AuthLayout`, `GoogleIcon`, `ProtectedRoute`.
 
-- `base44Client.js` → `src/api/supabaseClient.js`
-- `entities.X.list/filter/create/...` → `src/api/entities.js` (même syntaxe, tape sur Supabase)
-- Auth Base44 → Supabase Auth (email/password + Google OAuth)
-- Entité `User` → table `profiles` liée à `auth.users` (trigger auto à l'inscription)
-- Fonction `NotifierIncidentRésolu` → Edge Function Deno équivalente (prête, pas encore branchée sur un vrai SMS)
+## Différences techniques notables vs Base44
+
+- `created_date` (et non `created_at`) est le nom des colonnes horodatage dans Supabase,
+  pour matcher le tri `'-created_date'` utilisé partout dans le code.
+- `chauffeur_attitré` (avec l'accent, entre guillemets dans le SQL) est repris tel quel.
+- L'inscription par OTP (`Register.jsx`) suppose que Supabase Auth est configuré en mode
+  "Email OTP" (voir étape 4 ci-dessus).
+- `ResetPassword.jsx` : Supabase gère la session de récupération via le hash de l'URL
+  (pas via `?token=`), donc le champ `resetToken` n'est plus réellement utilisé côté API.
+
+## Logo & branding
+
+Le logo fourni est intégré comme favicon, icônes PWA (192/512/180px) et sur l'écran de connexion.

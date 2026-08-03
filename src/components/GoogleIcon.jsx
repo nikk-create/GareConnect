@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function GoogleIcon({ className = 'w-5 h-5' }) {
+export default function GoogleIcon({ className = 'w-5 h-5' }) {
   return (
     <svg className={className} viewBox="0 0 48 48">
       <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.6 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.3-.4-3.5z"/>

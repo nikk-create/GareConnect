@@ -11,26 +11,29 @@ export function GareProvider({ children }) {
 
   const addToast = useCallback((message, type = 'success') => {
     const id = Date.now() + Math.random();
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3200);
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => setToasts((prev) => prev.filter((t) => t.id !== id)), 3500);
   }, []);
 
   const toggleOffline = useCallback(() => {
-    setIsOffline(prev => {
+    setIsOffline((prev) => {
       const next = !prev;
-      addToast(next ? 'Mode hors-ligne activé' : 'Connexion rétablie — synchronisation...', next ? 'warn' : 'success');
+      addToast(next ? 'Mode hors-ligne activé' : 'Connexion rétablie', next ? 'warn' : 'success');
       return next;
     });
   }, [addToast]);
 
   const addToPending = useCallback((action) => {
-    setPendingQueue(prev => [...prev, { ...action, id: Date.now(), timestamp: new Date().toISOString(), status: 'pending' }]);
+    setPendingQueue((prev) => [
+      ...prev,
+      { ...action, id: Date.now(), timestamp: new Date().toISOString(), status: 'pending' },
+    ]);
   }, []);
 
   const syncQueue = useCallback(() => {
-    setPendingQueue(prev => prev.map(item => ({ ...item, status: 'synced' })));
-    addToast('Synchronisation terminée !', 'success');
-    setTimeout(() => setPendingQueue([]), 2000);
+    setPendingQueue((prev) => prev.map((item) => ({ ...item, status: 'synced' })));
+    addToast('Synchronisation terminée', 'success');
+    setTimeout(() => setPendingQueue((prev) => prev.filter((i) => i.status !== 'synced')), 1500);
   }, [addToast]);
 
   const openSheet = useCallback((name, data = null) => {
@@ -44,12 +47,14 @@ export function GareProvider({ children }) {
   }, []);
 
   return (
-    <GareContext.Provider value={{
-      isOffline, toggleOffline,
-      pendingQueue, addToPending, syncQueue,
-      toasts, addToast,
-      activeSheet, sheetData, openSheet, closeSheet,
-    }}>
+    <GareContext.Provider
+      value={{
+        isOffline, toggleOffline,
+        pendingQueue, addToPending, syncQueue,
+        toasts, addToast,
+        activeSheet, sheetData, openSheet, closeSheet,
+      }}
+    >
       {children}
     </GareContext.Provider>
   );

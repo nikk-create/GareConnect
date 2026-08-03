@@ -1,15 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
-  :root { --border: 220 15% 90%; --background: 0 0% 100%; --foreground: 220 40% 10%; }
-  html, body, #root { height: 100%; }
-  body {
-    font-family: 'Inter', sans-serif;
-    background-color: #F3F6F5;
-    -webkit-tap-highlight-color: transparent;
+  :root {
+    --font-outfit: 'Outfit', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+
+    --background: 216 78% 6%;
+    --foreground: 180 100% 95%;
+    --card: 216 60% 10%;
+    --card-foreground: 180 100% 95%;
+    --popover: 216 65% 8%;
+    --popover-foreground: 180 100% 95%;
+    --primary: 162 100% 45%;
+    --primary-foreground: 216 78% 6%;
+    --secondary: 14 100% 63%;
+    --secondary-foreground: 216 78% 6%;
+    --muted: 216 40% 15%;
+    --muted-foreground: 210 20% 55%;
+    --accent: 199 100% 62%;
+    --accent-foreground: 216 78% 6%;
+    --destructive: 351 100% 62%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 216 40% 16%;
+    --input: 216 40% 16%;
+    --ring: 162 100% 45%;
+    --radius: 0.75rem;
+
+    --chart-1: 162 100% 45%;
+    --chart-2: 14 100% 63%;
+    --chart-3: 199 100% 62%;
+    --chart-4: 45 100% 58%;
+    --chart-5: 351 100% 62%;
+
+    --sidebar-background: 216 60% 8%;
+    --sidebar-foreground: 180 100% 95%;
+    --sidebar-primary: 162 100% 45%;
+    --sidebar-primary-foreground: 216 78% 6%;
+    --sidebar-accent: 216 40% 15%;
+    --sidebar-accent-foreground: 180 100% 95%;
+    --sidebar-border: 216 40% 16%;
+    --sidebar-ring: 162 100% 45%;
   }
-  * { -webkit-overflow-scrolling: touch; }
-  ::-webkit-scrollbar { display: none; }
+
+  .dark {
+    --background: 216 78% 6%;
+    --foreground: 180 100% 95%;
+    --card: 216 60% 10%;
+    --card-foreground: 180 100% 95%;
+    --popover: 216 65% 8%;
+    --popover-foreground: 180 100% 95%;
+    --primary: 162 100% 45%;
+    --primary-foreground: 216 78% 6%;
+    --secondary: 14 100% 63%;
+    --secondary-foreground: 216 78% 6%;
+    --muted: 216 40% 15%;
+    --muted-foreground: 210 20% 55%;
+    --accent: 199 100% 62%;
+    --accent-foreground: 216 78% 6%;
+    --destructive: 351 100% 62%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 216 40% 16%;
+    --input: 216 40% 16%;
+    --ring: 162 100% 45%;
+  }
 }
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-outfit);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(216 40% 20%);
+  border-radius: 999px;
+}
+
+/* Safe area insets */
+.safe-top { padding-top: env(safe-area-inset-top, 0px); }
+.safe-bottom { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+/* Glass effect */
+.glass {
+  background: rgba(10, 25, 50, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* Glow effects */
+.glow-primary {
+  box-shadow: 0 0 20px rgba(0, 229, 176, 0.15), 0 0 60px rgba(0, 229, 176, 0.05);
+}
+.glow-secondary {
+  box-shadow: 0 0 20px rgba(255, 112, 67, 0.15), 0 0 60px rgba(255, 112, 67, 0.05);
+}
+.glow-accent {
+  box-shadow: 0 0 20px rgba(64, 196, 255, 0.15), 0 0 60px rgba(64, 196, 255, 0.05);
+}
+
+/* Mono font utility */
+.font-mono-gc {
+  font-family: var(--font-mono);
+}
+
+/* Pulse animation for live indicators */
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.animate-pulse-live {
+  animation: pulse-live 2s ease-in-out infinite;
+}
+
+/* Slide up animation for sheets */
+@keyframes slide-up {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-slide-up {
+  animation: slide-up 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+/* Hide scrollbar but keep functionality */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }

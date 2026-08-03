@@ -1,6 +1,5 @@
-// Supabase Edge Function — équivalent de base44/Fonctions/NotifierIncidentRésolu
-// Déployer avec : supabase functions deploy notifier-incident-resolu
-
+// Supabase Edge Function — équivalent de base44/functions/NotifierIncidentRésolu
+// Déployer avec : supabase functions deploy notifyIncidentResolved
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -17,10 +16,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
     }
 
-    // Client "utilisateur" pour vérifier l'authentification
     const supabaseUser = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
+      Deno.env.get("SUPABASE_URL"),
+      Deno.env.get("SUPABASE_ANON_KEY"),
       { global: { headers: { Authorization: authHeader } } }
     );
     const { data: { user }, error: authError } = await supabaseUser.auth.getUser();
@@ -28,10 +26,9 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Unauthorized" }, { status: 401, headers: corsHeaders });
     }
 
-    // Client "service role" pour les écritures (équivalent asServiceRole)
     const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
+      Deno.env.get("SUPABASE_URL"),
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")
     );
 
     const { incident_id } = await req.json();
@@ -45,11 +42,11 @@ Deno.serve(async (req) => {
       return Response.json({ error: "Incident non trouvé" }, { status: 404, headers: corsHeaders });
     }
 
-    const { data: tickets = [] } = await supabase
+    const { data: tickets } = await supabase
       .from("tickets").select("*").eq("voyage_id", incident.voyage_id);
 
-    const notified: { contact: string; telephone: string }[] = [];
-    const alertsToInsert: any[] = [];
+    const notified = [];
+    const alertsToInsert = [];
 
     for (const ticket of tickets ?? []) {
       const contacts = ticket.contacts_famille || [];
@@ -58,13 +55,9 @@ Deno.serve(async (req) => {
           const msg = `Bonne nouvelle ! L'incident ${incident.type_incident} concernant le voyage de ${ticket.passager_prenom} ${ticket.passager_nom} vers ${incident.destination || ticket.destination || "la destination"} a été résolu. ${incident.resolution_notes ? "Note: " + incident.resolution_notes : ""}`.trim();
 
           alertsToInsert.push({
-            type: "incident",
-            message: msg,
-            voyage_id: incident.voyage_id,
+            type: "incident", message: msg, voyage_id: incident.voyage_id,
             destination: incident.destination || ticket.destination || "",
-            destinataire: contact.telephone,
-            statut_sms: "envoye",
-            cout_sms: 25,
+            destinataire: contact.telephone, statut_sms: "envoye", cout_sms: 25,
           });
           notified.push({ contact: contact.nom, telephone: contact.telephone });
         }
@@ -74,13 +67,9 @@ Deno.serve(async (req) => {
         const msg = `Incident résolu: Le voyage ${incident.code_voyage || ""} vers ${incident.destination || ticket.destination || "la destination"} est de nouveau en ordre. ${incident.resolution_notes || ""}`.trim();
 
         alertsToInsert.push({
-          type: "incident",
-          message: msg,
-          voyage_id: incident.voyage_id,
+          type: "incident", message: msg, voyage_id: incident.voyage_id,
           destination: incident.destination || ticket.destination || "",
-          destinataire: ticket.passager_telephone,
-          statut_sms: "envoye",
-          cout_sms: 25,
+          destinataire: ticket.passager_telephone, statut_sms: "envoye", cout_sms: 25,
         });
         notified.push({ contact: `${ticket.passager_prenom} ${ticket.passager_nom}`, telephone: ticket.passager_telephone });
       }
@@ -98,6 +87,6 @@ Deno.serve(async (req) => {
       { headers: corsHeaders }
     );
   } catch (error) {
-    return Response.json({ error: (error as Error).message }, { status: 500, headers: corsHeaders });
+    return Response.json({ error: error.message }, { status: 500, headers: corsHeaders });
   }
 });

@@ -1,4 +1,3 @@
-// Remplace base44/api/base44Client.js
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
